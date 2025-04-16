@@ -1,0 +1,3 @@
+[submodule "knapsack/kplib"]
+	path = knapsack/kplib
+	url = https://github.com/likr/kplib.git
