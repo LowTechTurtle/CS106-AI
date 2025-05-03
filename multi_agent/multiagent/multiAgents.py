@@ -368,39 +368,30 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
 
 
 def closestItemDistance(currentGameState, items):
-    """Returns the maze distance to the closest item present in items"""
+    """
+    Tra ve khoang cach cua item gan nhat, item co the la food, capsule
+    Dung BFS de tinh toan thay vi manhattan cho ket qua dung hon
+    """
 
-    # BFS to find the maze distance from position to closest item
     walls = currentGameState.getWalls()
-
     start = currentGameState.getPacmanPosition()
 
-    # Dictionary storing the maze distance from start to any given position
     distance = {start: 0}
-
-    # Set of visited positions in order to avoid revisiting them again
     visited = {start}
-
     queue = util.Queue()
     queue.push(start)
 
     while not queue.isEmpty():
-
         position = x, y = queue.pop()
-
         if position in items: return distance[position]
 
         for action in [Directions.NORTH, Directions.SOUTH, Directions.EAST, Directions.WEST]:
-
             dx, dy = Actions.directionToVector(action)
             next_position = nextx, nexty = int(x + dx), int(y + dy)
-
             if not walls[nextx][nexty] and next_position not in visited:
                 queue.push(next_position)
                 visited.add(next_position)
-                # A single action separates position from next_position, so the distance is 1
                 distance[next_position] = distance[position] + 1
-
     return None
 
 def betterEvaluationFunction(currentGameState):
@@ -409,12 +400,12 @@ def betterEvaluationFunction(currentGameState):
       evaluation function (question 5).
 
       DESCRIPTION:
-      The following features are considered and combined:
-        - Compute the maze distance to the closest food dot
-        - Compute the maze distance to the closest capsule
-        - If the ghost is scared and close, eat it
-        - If the ghost is not scared and close, run away
-        - Take into account score (the longer the game is, the lower the score will be)
+      Evaluation function co tinh den diem so trong game, vi neu pacman dung yen thi
+      diem so se giam dan => pacman se it dung yen hon va di tim thuc an
+
+      Neu ma bi gan va dang so thi se duoi theo ma, neu khong se tranh ma
+
+      Co tinh toan lien quan den tuong va cac vi tri bi chan
     """
     "*** YOUR CODE HERE ***"
     infinity = float('inf')
@@ -424,9 +415,6 @@ def betterEvaluationFunction(currentGameState):
     foodList = currentGameState.getFood().asList()
     capsuleList = currentGameState.getCapsules()
 
-    # if currentGameState.isWin(): return infinity
-    # if currentGameState.isLose(): return -infinity
-
     for ghost in ghostStates:
         d = manhattanDistance(position, ghost.getPosition())
         if ghost.scaredTimer > 6 and d < 2:
@@ -434,9 +422,7 @@ def betterEvaluationFunction(currentGameState):
         elif ghost.scaredTimer < 5 and d < 2:
             return -infinity
 
-    # Distance to closest food pellet
-    # Note that at least one food pellet must exist,
-    # otherwise we would have already won!
+    # khoang cach den thuc an gan nhat, tim bang BFS, co tinh den tuong
     cFD = closestItemDistance(currentGameState, foodList)
     if cFD is not None and cFD == 0.0:
         cFD += 1.0
@@ -444,9 +430,7 @@ def betterEvaluationFunction(currentGameState):
         cFD = 1.0
     foodDistance = 1.0/cFD
 
-    # Distance to closest capsule
-    # capsuleDistance = closestItemDistance(currentGameState, capsuleList)
-    # capsuleDistance = 0.0 if capsuleDistance is None else 1.0/capsuleDistance
+    # tuong tu nhu thuc an o tren, tim khoang cach den capsule gan nhat
     cCD = closestItemDistance(currentGameState, capsuleList)
     capsuleDistance = 0.0
     if cCD is not None:
@@ -455,7 +439,6 @@ def betterEvaluationFunction(currentGameState):
         else:
             capsuleDistance = 1/cCD
 
-    # Coefficients are kinda arbitrary but this combination seems to work
     return 10.0*foodDistance + 5.0*score + 0.5*capsuleDistance
 
 
