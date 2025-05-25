@@ -322,50 +322,52 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
     """
       Your expectimax agent (question 4)
     """
+    def maxValue(self, gameState, agent, depth):
+        bestValue = float("-inf")
+        for action in gameState.getLegalActions(agent):
+            successor = gameState.generateSuccessor(agent, action)
+            v = self.expectimax(successor, agent+1, depth)
+            bestValue = max(bestValue, v)
+            if depth == 1 and bestValue == v: self.action = action
+        return bestValue
+
+    def probability(self, legalActions):
+        return 1.0 / len(legalActions)
+
+    def expValue(self, gameState, agent, depth):
+        legalActions = gameState.getLegalActions(agent)
+        v = 0
+        for action in legalActions:
+            successor = gameState.generateSuccessor(agent, action)
+            p = self.probability(legalActions)
+            v += p * self.expectimax(successor, agent+1, depth)
+        return v
+
+    def expectimax(self, gameState, agent=0, depth=0):
+
+        agent = agent % gameState.getNumAgents()
+
+        if gameState.isWin() or gameState.isLose():
+            return self.evaluationFunction(gameState)
+
+        if agent == 0:
+            if depth < self.depth:
+                return self.maxValue(gameState, agent, depth+1)
+            else:
+                return self.evaluationFunction(gameState)
+        else:
+            return self.expValue(gameState, agent, depth)
+
     def getAction(self, gameState):
         """
-        Returns the expectimax action using self.depth and self.evaluationFunction
+          Returns the expectimax action using self.depth and self.evaluationFunction
+
+          All ghosts should be modeled as choosing uniformly at random from their
+          legal moves.
         """
-
-        def expectimax(state, agentIdx, depth):
-            if depth == self.depth or state.isWin() or state.isLose():
-                return self.evaluationFunction(state)
-
-            if agentIdx == 0:  # Pacman (max)
-                return maxValue(state, agentIdx, depth)
-            else:  # Ghost (expectation)
-                return expValue(state, agentIdx, depth)
-
-        def maxValue(state, agentIdx, depth):
-            bestValue = float('-inf')
-            bestAction = None
-            for action in state.getLegalActions(agentIdx):
-                successor = state.generateSuccessor(agentIdx, action)
-                value = expectimax(successor, agentIdx + 1, depth)
-                if value > bestValue:
-                    bestValue = value
-                    bestAction = action
-            if depth == 0:  # If root node, return action
-                return bestAction
-            return bestValue
-
-        def expValue(state, agentIdx, depth):
-            actions = state.getLegalActions(agentIdx)
-            if not actions:
-                return self.evaluationFunction(state)
-            total = 0
-            prob = 1.0 / len(actions)
-            for action in actions:
-                successor = state.generateSuccessor(agentIdx, action)
-                if agentIdx == state.getNumAgents() - 1:
-                    value = expectimax(successor, 0, depth + 1)
-                else:
-                    value = expectimax(successor, agentIdx + 1, depth)
-                total += prob * value
-            return total
-
-        return expectimax(gameState, 0, 0)
-
+        "*** YOUR CODE HERE ***"
+        self.expectimax(gameState)
+        return self.action
 
 def closestItemDistance(currentGameState, items):
     """
